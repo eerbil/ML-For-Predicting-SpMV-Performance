@@ -1,7 +1,5 @@
 import numpy as np
 from sklearn import svm
-import numpy.ma as ma
-import math as mat
 
 np.set_printoptions(threshold='nan')
 
@@ -239,3 +237,4 @@ for test in range(0, 10):
             #print abs((csr_pred[i] - csr_y_data[i]) / csr_y_data[i])
         sum_csr += abs((csr_pred[i] - csr_y_data[i]) / csr_y_data[i])
     print "rme of csr: " + str(sum_csr / len(test_csr_X[test]))
+
