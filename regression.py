@@ -106,9 +106,9 @@ for test in range(0, 10):
     # Create linear regression object
     regr_coo = svm.SVR(C=400, epsilon=1e-5, kernel='rbf', verbose=5)
     coo_model = regr_coo.fit(train_coo_X[test], train_coo_Y[test])
-    print(coo_model)
+    #print(coo_model)
     prediction_coo = coo_model.predict(test_coo_X[test])
-    print "score of testing set " + str(test) + ": " + str(regr_coo.score(test_coo_X[test], test_coo_Y[test]))
+    print "score of coo testing set " + str(test) + ": " + str(regr_coo.score(test_coo_X[test], test_coo_Y[test]))
     # t_pred = coo_model.predict(coo_X_train)
     sum_coo = 0
 
@@ -161,9 +161,9 @@ for test in range(0, 10):
     # Create linear regression object
     regr_ell = svm.SVR(C=0.5, epsilon=1e-6, kernel='rbf', verbose = 5)
     ell_model = regr_ell.fit(train_ell_X[test], train_ell_Y[test])
-    print(ell_model)
+    #print(ell_model)
     prediction_ell = ell_model.predict(test_ell_X[test])
-    print "score of testing set " + str(test) + ": " + str(regr_ell.score(test_ell_X[test], test_ell_Y[test]))
+    print "score of ell testing set " + str(test) + ": " + str(regr_ell.score(test_ell_X[test], test_ell_Y[test]))
     # t_pred = ell_model.predict(ell_X_train)
     sum_ell = 0
 
@@ -219,9 +219,9 @@ for test in range(0, 10):
     # Create linear regression object
     regr_csr = svm.SVR(C=1, epsilon=1e-7, kernel='rbf', verbose= 5)
     csr_model = regr_csr.fit(train_csr_X[test], train_csr_Y[test])
-    print(csr_model)
+    #print(csr_model)
     prediction_csr = csr_model.predict(test_csr_X[test])
-    print "score of testing set " + str(test) + ": " + str(regr_csr.score(test_csr_X[test], test_csr_Y[test]))
+    print "score of csr testing set " + str(test) + ": " + str(regr_csr.score(test_csr_X[test], test_csr_Y[test]))
     # t_pred = csr_model.predict(csr_X_train)
     sum_csr = 0
 
@@ -237,4 +237,3 @@ for test in range(0, 10):
             #print abs((csr_pred[i] - csr_y_data[i]) / csr_y_data[i])
         sum_csr += abs((csr_pred[i] - csr_y_data[i]) / csr_y_data[i])
     print "rme of csr: " + str(sum_csr / len(test_csr_X[test]))
-

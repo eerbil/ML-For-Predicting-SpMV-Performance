@@ -102,48 +102,114 @@ csr_mean_Y = np.mean(csr_log_times, axis = 0)
 csr_std_Y = np.std(csr_log_times, axis = 0)
 csr_norm_times = np.multiply((csr_log_times - csr_mean_Y), (1 / csr_std_Y))
 
-print csr_X_norm
-print csr_norm_times
+train_coo_X = []
+test_coo_X = []
+train_coo_Y = []
+test_coo_Y = []
+
+train_csr_X = []
+test_csr_X = []
+train_csr_Y = []
+test_csr_Y = []
+
+train_ell_X = []
+test_ell_X = []
+train_ell_Y = []
+test_ell_Y = []
 
 ### Split
-coo_X_train = np.array(coo_X_norm[62:])
-coo_X_test = np.array(coo_X_norm[:62])
+for i in range(0, 10):
+    test_coo_X.append(coo_X_norm[62*i: 62*(i+1)])
+    x_temp = np.concatenate((coo_X_norm[0: 62*i], coo_X_norm[62*(i+1): 620]), axis=0)
+    train_coo_X.append(x_temp)
+    test_coo_Y.append(coo_norm_times[62 * i: 62 * (i + 1)])
+    y_temp = np.concatenate((coo_norm_times[0: 62 * i], coo_norm_times[62 * (i + 1): 620]), axis=0)
+    train_coo_Y.append(y_temp)
+    x_temp = []
+    y_temp = []
 
-csr_X_train = np.array(csr_X_norm[62:])
-csr_X_test = np.array(csr_X_norm[:62])
+for i in range(0, 10):
+    test_csr_X.append(csr_X_norm[62 * i: 62 * (i + 1)])
+    x_temp = np.concatenate((csr_X_norm[0: 62 * i], csr_X_norm[62 * (i + 1): 620]), axis=0)
+    train_csr_X.append(x_temp)
+    test_csr_Y.append(csr_norm_times[62 * i: 62 * (i + 1)])
+    y_temp = np.concatenate((csr_norm_times[0: 62 * i], csr_norm_times[62 * (i + 1): 620]), axis=0)
+    train_csr_Y.append(y_temp)
+    x_temp = []
+    y_temp = []
 
-ell_X_train = np.array(ell_X_norm[62:])
-ell_X_test = np.array(ell_X_norm[:62])
+for i in range(0, 10):
+    test_ell_X.append(ell_X_norm[20*i: 20*(i+1)])
+    x_temp = np.concatenate((ell_X_norm[0: 20*i], ell_X_norm[20*(i+1): 200]), axis=0)
+    train_ell_X.append(x_temp)
+    test_ell_Y.append(ell_norm_times[20 * i: 20 * (i + 1)])
+    y_temp = np.concatenate((ell_norm_times[0: 20 * i], ell_norm_times[20 * (i + 1): 200]), axis=0)
+    train_ell_Y.append(y_temp)
+    x_temp = []
+    y_temp = []
 
-coo_Y_train = np.array(coo_norm_times[62:])
-coo_Y_test = np.array(coo_norm_times[:62])
-
-csr_Y_train = np.array(csr_norm_times[62:])
-csr_Y_test = np.array(csr_norm_times[:62])
-
-ell_Y_train = np.array(ell_norm_times[62:])
-ell_Y_test = np.array(ell_norm_times[:62])
-
-clf_coo = MLPRegressor(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(len(coo_X[0]), 1), random_state=1,
+for test in range(0, 10):
+    clf_coo = MLPRegressor(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(len(coo_X[0]), 1), random_state=1,
                         learning_rate_init=0.01, momentum=0.2)
-clf_csr = MLPRegressor(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(len(csr_X[0]), 1), random_state=1,
+    coo_model = clf_coo.fit(train_coo_X[test], train_coo_Y[test])
+    #print(coo_model)
+    prediction_coo = coo_model.predict(test_coo_X[test])
+    print "score of coo testing set " + str(test) + ": " + str(clf_coo.score(test_coo_X[test], test_coo_Y[test]))
+    coo_mult = np.multiply(prediction_coo, coo_std_Y)
+    coo_sum_mean = coo_mult + coo_mean_Y
+    coo_pred = np.power(10, coo_sum_mean)
+
+    coo_y_data = coo_times[62 * test: 62 * (test + 1)]
+
+    sum_coo = 0
+    for i in range(0, len(test_coo_X[test])):
+        # print str(prediction_coo[i]) + " vs " + str(coo_y_test[i])
+        # print str(coo_pred[i]) + " vs " + str(coo_y_data[i])
+        # if abs((coo_pred[i] - coo_y_data[i]) / coo_y_data[i]) > 0.5:
+        # print abs((coo_pred[i] - coo_y_data[i]) / coo_y_data[i])
+        sum_coo += abs((coo_pred[i] - coo_y_data[i]) / coo_y_data[i])
+    print "rme of coo: " + str(sum_coo / len(test_coo_X[test]))
+
+for test in range(0, 10):
+    clf_csr = MLPRegressor(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(len(csr_X[0]), 1), random_state=1,
                         learning_rate_init=0.01, momentum=0.2)
-clf_ell = MLPRegressor(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(len(ell_X[0]), 1), random_state=1,
+    csr_model = clf_csr.fit(train_csr_X[test], train_csr_Y[test])
+    #print(csr_model)
+    prediction_csr = csr_model.predict(test_csr_X[test])
+    print "score of csr testing set " + str(test) + ": " + str(clf_csr.score(test_csr_X[test], test_csr_Y[test]))
+    csr_mult = np.multiply(prediction_csr, csr_std_Y)
+    csr_sum_mean = csr_mult + csr_mean_Y
+    csr_pred = np.power(10, csr_sum_mean)
+
+    csr_y_data = csr_times[62 * test: 62 * (test + 1)]
+
+    sum_csr = 0
+    for i in range(0, len(test_csr_X[test])):
+        # print str(prediction_csr[i]) + " vs " + str(csr_y_test[i])
+        # print str(csr_pred[i]) + " vs " + str(csr_y_data[i])
+        # if abs((csr_pred[i] - csr_y_data[i]) / csr_y_data[i]) > 0.5:
+        # print abs((csr_pred[i] - csr_y_data[i]) / csr_y_data[i])
+        sum_csr += abs((csr_pred[i] - csr_y_data[i]) / csr_y_data[i])
+    print "rme of csr: " + str(sum_csr / len(test_csr_X[test]))
+
+for test in range(0, 10):
+    clf_ell = MLPRegressor(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(len(ell_X[0]), 1), random_state=1,
                         learning_rate_init=0.01, momentum=0.2)
+    ell_model = clf_ell.fit(train_ell_X[test], train_ell_Y[test])
+    #print(ell_model)
+    prediction_ell = ell_model.predict(test_ell_X[test])
+    print "score of ell testing set " + str(test) + ": " + str(clf_ell.score(test_ell_X[test], test_ell_Y[test]))
+    ell_mult = np.multiply(prediction_ell, ell_std_Y)
+    ell_sum_mean = ell_mult + ell_mean_Y
+    ell_pred = np.power(10, ell_sum_mean)
 
-#print clf_coo
-print clf_csr
-#print clf_ell
+    ell_y_data = ell_times_final[20 * test: 20 * (test + 1)]
 
-clf_coo.fit(coo_X_train, coo_Y_train)
-clf_csr.fit(csr_X_train, csr_Y_train)
-clf_ell.fit(ell_X_train, ell_Y_train)
-
-#print clf_coo.predict(coo_X_test)
-print clf_csr.predict(csr_X_test)
-#print clf_ell.predict(ell_X_test)
-
-#print clf_coo.score(coo_X_test, coo_Y_test)
-print clf_csr.score(csr_X_test, csr_Y_test)
-#print clf_ell.score(ell_X_test, ell_Y_test)
-
+    sum_ell = 0
+    for i in range(0, len(test_ell_X[test])):
+        # print str(prediction_ell[i]) + " vs " + str(ell_y_test[i])
+        # print str(ell_pred[i]) + " vs " + str(ell_y_data[i])
+        # if abs((ell_pred[i] - ell_y_data[i]) / ell_y_data[i]) > 0.5:
+        # print abs((ell_pred[i] - ell_y_data[i]) / ell_y_data[i])
+        sum_ell += abs((ell_pred[i] - ell_y_data[i]) / ell_y_data[i])
+    print "rme of ell: " + str(sum_ell / len(test_ell_X[test]))
