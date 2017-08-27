@@ -7,6 +7,7 @@ csr_data = open("timesCSR_2017-07-25_10_46_54.863055.txt", 'r')
 ell_data = open("timesELL_2017-07-25_10_46_54.863055.txt", 'r')
 coo_data = open("timesCOO_2017-07-25_10_46_54.863055.txt", 'r')
 feature_data = open("features_2017-07-25_10_46_54.863055.txt", 'r')
+output = open("svr-scoring.txt", 'w')
 
 csr_times = []
 coo_times = []
@@ -102,6 +103,7 @@ for i in range(0, 10):
     x_temp = []
     y_temp = []
 
+output.write("COO" + "\n")
 for test in range(0, 10):
     # Create linear regression object
     regr_coo = svm.SVR(C=400, epsilon=1e-5, kernel='rbf', verbose=5)
@@ -124,7 +126,9 @@ for test in range(0, 10):
             #print abs((coo_pred[i] - coo_y_data[i]) / coo_y_data[i])
         sum_coo += abs((coo_pred[i] - coo_y_data[i]) / coo_y_data[i])
     print "rme of coo: " + str(sum_coo / len(test_coo_X[test]))
-
+    output.write(str(test) + " " + str(regr_coo.score(test_coo_X[test], test_coo_Y[test])) + " " +
+                 str(sum_coo / len(test_coo_X[test]))+ "\n")
+output.write("ELL" + "\n")
 """
 #ELL
 """
@@ -179,6 +183,8 @@ for test in range(0, 10):
             #print abs((ell_pred[i] - ell_y_data[i]) / ell_y_data[i])
         sum_ell += abs((ell_pred[i] - ell_y_data[i]) / ell_y_data[i])
     print "rme of ell: " + str(sum_ell / len(test_ell_X[test]))
+    output.write(str(test)+ " " + str(regr_ell.score(test_ell_X[test], test_ell_Y[test])) + " " +
+                 str(sum_ell / len(test_ell_X[test]))+ "\n")
 
 
 """
@@ -215,6 +221,7 @@ for i in range(0, 10):
     x_temp = []
     y_temp = []
 
+output.write("CSR" + "\n")
 for test in range(0, 10):
     # Create linear regression object
     regr_csr = svm.SVR(C=1, epsilon=1e-7, kernel='rbf', verbose= 5)
@@ -237,3 +244,5 @@ for test in range(0, 10):
             #print abs((csr_pred[i] - csr_y_data[i]) / csr_y_data[i])
         sum_csr += abs((csr_pred[i] - csr_y_data[i]) / csr_y_data[i])
     print "rme of csr: " + str(sum_csr / len(test_csr_X[test]))
+    output.write(str(test) + " " + str(regr_csr.score(test_csr_X[test], test_csr_Y[test])) + " " +
+                 str(sum_csr / len(test_csr_X[test])) + "\n")

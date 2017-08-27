@@ -5,6 +5,7 @@ csr_data = open("timesCSR_2017-07-25_10_46_54.863055.txt", 'r')
 ell_data = open("timesELL_2017-07-25_10_46_54.863055.txt", 'r')
 coo_data = open("timesCOO_2017-07-25_10_46_54.863055.txt", 'r')
 feature_data = open("features_2017-07-25_10_46_54.863055.txt", 'r')
+output = open("mlp-scoring.txt", 'w')
 
 csr_times = []
 coo_times = []
@@ -148,6 +149,7 @@ for i in range(0, 10):
     x_temp = []
     y_temp = []
 
+output.write("COO" + "\n")
 for test in range(0, 10):
     clf_coo = MLPRegressor(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(len(coo_X[0]), 1), random_state=1,
                         learning_rate_init=0.01, momentum=0.2)
@@ -169,7 +171,10 @@ for test in range(0, 10):
         # print abs((coo_pred[i] - coo_y_data[i]) / coo_y_data[i])
         sum_coo += abs((coo_pred[i] - coo_y_data[i]) / coo_y_data[i])
     print "rme of coo: " + str(sum_coo / len(test_coo_X[test]))
+    output.write(str(test) + " " + str(clf_coo.score(test_coo_X[test], test_coo_Y[test])) + " " +
+                 str(sum_coo / len(test_coo_X[test])) + "\n")
 
+output.write("CSR" + "\n")
 for test in range(0, 10):
     clf_csr = MLPRegressor(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(len(csr_X[0]), 1), random_state=1,
                         learning_rate_init=0.01, momentum=0.2)
@@ -191,7 +196,10 @@ for test in range(0, 10):
         # print abs((csr_pred[i] - csr_y_data[i]) / csr_y_data[i])
         sum_csr += abs((csr_pred[i] - csr_y_data[i]) / csr_y_data[i])
     print "rme of csr: " + str(sum_csr / len(test_csr_X[test]))
+    output.write(str(test) + " " + str(clf_csr.score(test_csr_X[test], test_csr_Y[test])) + " " +
+                 str(sum_csr / len(test_csr_X[test])) + "\n")
 
+output.write("ELL" + "\n")
 for test in range(0, 10):
     clf_ell = MLPRegressor(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(len(ell_X[0]), 1), random_state=1,
                         learning_rate_init=0.01, momentum=0.2)
@@ -213,3 +221,5 @@ for test in range(0, 10):
         # print abs((ell_pred[i] - ell_y_data[i]) / ell_y_data[i])
         sum_ell += abs((ell_pred[i] - ell_y_data[i]) / ell_y_data[i])
     print "rme of ell: " + str(sum_ell / len(test_ell_X[test]))
+    output.write(str(test) + " " + str(clf_ell.score(test_ell_X[test], test_ell_Y[test])) + " " +
+                 str(sum_ell / len(test_ell_X[test])) + "\n")
