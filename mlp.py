@@ -1,11 +1,10 @@
 from sklearn.neural_network import MLPRegressor
 import numpy as np
 
-csr_data = open("timesCSR_2017-07-25_10_46_54.863055.txt", 'r')
-ell_data = open("timesELL_2017-07-25_10_46_54.863055.txt", 'r')
-coo_data = open("timesCOO_2017-07-25_10_46_54.863055.txt", 'r')
-feature_data = open("features_2017-07-25_10_46_54.863055.txt", 'r')
-output = open("mlp-scoring.txt", 'w')
+csr_data = open("timesCSR", 'r')
+ell_data = open("timesELL", 'r')
+coo_data = open("timesCOO", 'r')
+feature_data = open("features", 'r')
 
 csr_times = []
 coo_times = []
@@ -67,7 +66,8 @@ for i in range(0, len(ell_n)):
     ell_X.append([ell_n[i], ell_nnz[i], ell_dis[i], ell_nmax[i]])
 
 ### Preprocessing COO X
-coo_X_log = np.log10(np.array(coo_X))
+coo_eps = np.add(coo_X, 1)
+coo_X_log = np.log10(np.array(coo_eps))
 mean_X = np.mean(coo_X_log,axis = 0)
 std_X = np.std(coo_X_log, axis=0)
 coo_X_norm = np.multiply((coo_X_log - mean_X), (1 / std_X))
@@ -79,7 +79,8 @@ coo_std_Y = np.std(coo_log_times, axis = 0)
 coo_norm_times = np.multiply((coo_log_times - coo_mean_Y), (1 / coo_std_Y))
 
 ### Preprocessing ELL X
-ell_X_log = np.log10(np.array(ell_X))
+ell_eps = np.add(ell_X, 1)
+ell_X_log = np.log10(np.array(ell_eps))
 mean_X = np.mean(ell_X_log,axis = 0)
 std_X = np.std(ell_X_log, axis=0)
 ell_X_norm = np.multiply((ell_X_log - mean_X), (1 / std_X))
@@ -103,6 +104,10 @@ csr_mean_Y = np.mean(csr_log_times, axis = 0)
 csr_std_Y = np.std(csr_log_times, axis = 0)
 csr_norm_times = np.multiply((csr_log_times - csr_mean_Y), (1 / csr_std_Y))
 
+coo_len = len(coo_X)
+csr_len = len(csr_X)
+ell_len = len(ell_X)
+
 train_coo_X = []
 test_coo_X = []
 train_coo_Y = []
@@ -120,38 +125,37 @@ test_ell_Y = []
 
 ### Split
 for i in range(0, 10):
-    test_coo_X.append(coo_X_norm[62*i: 62*(i+1)])
-    x_temp = np.concatenate((coo_X_norm[0: 62*i], coo_X_norm[62*(i+1): 620]), axis=0)
+    test_coo_X.append(coo_X_norm[(coo_len/10)*i: (coo_len/10)*(i+1)])
+    x_temp = np.concatenate((coo_X_norm[0: (coo_len/10)*i], coo_X_norm[(coo_len/10)*(i+1): coo_len]), axis=0)
     train_coo_X.append(x_temp)
-    test_coo_Y.append(coo_norm_times[62 * i: 62 * (i + 1)])
-    y_temp = np.concatenate((coo_norm_times[0: 62 * i], coo_norm_times[62 * (i + 1): 620]), axis=0)
+    test_coo_Y.append(coo_norm_times[(coo_len/10) * i: (coo_len/10) * (i + 1)])
+    y_temp = np.concatenate((coo_norm_times[0: (coo_len/10) * i], coo_norm_times[(coo_len/10) * (i + 1): coo_len]), axis=0)
     train_coo_Y.append(y_temp)
     x_temp = []
     y_temp = []
 
 for i in range(0, 10):
-    test_csr_X.append(csr_X_norm[62 * i: 62 * (i + 1)])
-    x_temp = np.concatenate((csr_X_norm[0: 62 * i], csr_X_norm[62 * (i + 1): 620]), axis=0)
+    test_csr_X.append(csr_X_norm[(csr_len/10) * i: (csr_len/10) * (i + 1)])
+    x_temp = np.concatenate((csr_X_norm[0: (csr_len/10) * i], csr_X_norm[(csr_len/10) * (i + 1): csr_len]), axis=0)
     train_csr_X.append(x_temp)
-    test_csr_Y.append(csr_norm_times[62 * i: 62 * (i + 1)])
-    y_temp = np.concatenate((csr_norm_times[0: 62 * i], csr_norm_times[62 * (i + 1): 620]), axis=0)
+    test_csr_Y.append(csr_norm_times[(csr_len/10) * i: (csr_len/10) * (i + 1)])
+    y_temp = np.concatenate((csr_norm_times[0: (csr_len/10) * i], csr_norm_times[(csr_len/10) * (i + 1): csr_len]), axis=0)
     train_csr_Y.append(y_temp)
     x_temp = []
     y_temp = []
 
 for i in range(0, 10):
-    test_ell_X.append(ell_X_norm[20*i: 20*(i+1)])
-    x_temp = np.concatenate((ell_X_norm[0: 20*i], ell_X_norm[20*(i+1): 200]), axis=0)
+    test_ell_X.append(ell_X_norm[(ell_len/10)*i: (ell_len/10)*(i+1)])
+    x_temp = np.concatenate((ell_X_norm[0: (ell_len/10)*i], ell_X_norm[(ell_len/10)*(i+1): ell_len]), axis=0)
     train_ell_X.append(x_temp)
-    test_ell_Y.append(ell_norm_times[20 * i: 20 * (i + 1)])
-    y_temp = np.concatenate((ell_norm_times[0: 20 * i], ell_norm_times[20 * (i + 1): 200]), axis=0)
+    test_ell_Y.append(ell_norm_times[(ell_len/10) * i: (ell_len/10) * (i + 1)])
+    y_temp = np.concatenate((ell_norm_times[0: (ell_len/10) * i], ell_norm_times[(ell_len/10) * (i + 1): ell_len]), axis=0)
     train_ell_Y.append(y_temp)
     x_temp = []
     y_temp = []
 
-output.write("COO" + "\n")
 for test in range(0, 10):
-    clf_coo = MLPRegressor(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(len(coo_X[0]), 1), random_state=1,
+    clf_coo = MLPRegressor(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(len(coo_X[0]), 1), random_state=2,
                         learning_rate_init=0.01, momentum=0.2)
     coo_model = clf_coo.fit(train_coo_X[test], train_coo_Y[test])
     #print(coo_model)
@@ -161,7 +165,7 @@ for test in range(0, 10):
     coo_sum_mean = coo_mult + coo_mean_Y
     coo_pred = np.power(10, coo_sum_mean)
 
-    coo_y_data = coo_times[62 * test: 62 * (test + 1)]
+    coo_y_data = coo_times[(coo_len/10) * test: (coo_len/10) * (test + 1)]
 
     sum_coo = 0
     for i in range(0, len(test_coo_X[test])):
@@ -171,12 +175,9 @@ for test in range(0, 10):
         # print abs((coo_pred[i] - coo_y_data[i]) / coo_y_data[i])
         sum_coo += abs((coo_pred[i] - coo_y_data[i]) / coo_y_data[i])
     print "rme of coo: " + str(sum_coo / len(test_coo_X[test]))
-    output.write(str(test) + " " + str(clf_coo.score(test_coo_X[test], test_coo_Y[test])) + " " +
-                 str(sum_coo / len(test_coo_X[test])) + "\n")
 
-output.write("CSR" + "\n")
 for test in range(0, 10):
-    clf_csr = MLPRegressor(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(len(csr_X[0]), 1), random_state=1,
+    clf_csr = MLPRegressor(solver='lbfgs', alpha=1e-7, hidden_layer_sizes=(len(csr_X[0]), 1), random_state=3,
                         learning_rate_init=0.01, momentum=0.2)
     csr_model = clf_csr.fit(train_csr_X[test], train_csr_Y[test])
     #print(csr_model)
@@ -186,9 +187,9 @@ for test in range(0, 10):
     csr_sum_mean = csr_mult + csr_mean_Y
     csr_pred = np.power(10, csr_sum_mean)
 
-    csr_y_data = csr_times[62 * test: 62 * (test + 1)]
-
+    csr_y_data = csr_times[(csr_len/10) * test: (csr_len/10) * (test + 1)]
     sum_csr = 0
+
     for i in range(0, len(test_csr_X[test])):
         # print str(prediction_csr[i]) + " vs " + str(csr_y_test[i])
         # print str(csr_pred[i]) + " vs " + str(csr_y_data[i])
@@ -196,10 +197,7 @@ for test in range(0, 10):
         # print abs((csr_pred[i] - csr_y_data[i]) / csr_y_data[i])
         sum_csr += abs((csr_pred[i] - csr_y_data[i]) / csr_y_data[i])
     print "rme of csr: " + str(sum_csr / len(test_csr_X[test]))
-    output.write(str(test) + " " + str(clf_csr.score(test_csr_X[test], test_csr_Y[test])) + " " +
-                 str(sum_csr / len(test_csr_X[test])) + "\n")
 
-output.write("ELL" + "\n")
 for test in range(0, 10):
     clf_ell = MLPRegressor(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(len(ell_X[0]), 1), random_state=1,
                         learning_rate_init=0.01, momentum=0.2)
@@ -211,7 +209,7 @@ for test in range(0, 10):
     ell_sum_mean = ell_mult + ell_mean_Y
     ell_pred = np.power(10, ell_sum_mean)
 
-    ell_y_data = ell_times_final[20 * test: 20 * (test + 1)]
+    ell_y_data = ell_times_final[(ell_len/10) * test: (ell_len/10) * (test + 1)]
 
     sum_ell = 0
     for i in range(0, len(test_ell_X[test])):
@@ -221,5 +219,3 @@ for test in range(0, 10):
         # print abs((ell_pred[i] - ell_y_data[i]) / ell_y_data[i])
         sum_ell += abs((ell_pred[i] - ell_y_data[i]) / ell_y_data[i])
     print "rme of ell: " + str(sum_ell / len(test_ell_X[test]))
-    output.write(str(test) + " " + str(clf_ell.score(test_ell_X[test], test_ell_Y[test])) + " " +
-                 str(sum_ell / len(test_ell_X[test])) + "\n")

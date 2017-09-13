@@ -3,10 +3,10 @@ from sklearn import svm
 
 np.set_printoptions(threshold='nan')
 
-csr_data = open("timesCSR_2017-07-25_10_46_54.863055.txt", 'r')
-ell_data = open("timesELL_2017-07-25_10_46_54.863055.txt", 'r')
-coo_data = open("timesCOO_2017-07-25_10_46_54.863055.txt", 'r')
-feature_data = open("features_2017-07-25_10_46_54.863055.txt", 'r')
+csr_data = open("timesCSR", 'r')
+ell_data = open("timesELL", 'r')
+coo_data = open("timesCOO", 'r')
+feature_data = open("features", 'r')
 output = open("svr-scoring.txt", 'w')
 
 csr_times = []
@@ -76,8 +76,9 @@ for i in range(0, len(ell_n)):
 
 # Split the targets into training/testing sets
 ### Preprocessing X
-coo_X_log = np.log10(np.array(coo_X))
-mean_X = np.mean(coo_X_log,axis = 0)
+coo_eps = np.add(coo_X, 1)
+coo_X_log = np.log10(np.array(coo_eps))
+mean_X = np.mean(coo_X_log,axis=0)
 std_X = np.std(coo_X_log, axis=0)
 coo_X_norm = np.multiply((coo_X_log - mean_X), (1 / std_X))
 
@@ -93,12 +94,14 @@ test_coo_X = []
 train_coo_Y = []
 test_coo_Y = []
 
+coo_len = len(coo_X)
+
 for i in range(0, 10):
-    test_coo_X.append(coo_X_norm[62*i: 62*(i+1)])
-    x_temp = np.concatenate((coo_X_norm[0: 62*i], coo_X_norm[62*(i+1): 620]), axis=0)
+    test_coo_X.append(coo_X_norm[(coo_len/10)*i: (coo_len/10)*(i+1)])
+    x_temp = np.concatenate((coo_X_norm[0: (coo_len/10)*i], coo_X_norm[(coo_len/10)*(i+1): coo_len]), axis=0)
     train_coo_X.append(x_temp)
-    test_coo_Y.append(coo_norm_times[62 * i: 62 * (i + 1)])
-    y_temp = np.concatenate((coo_norm_times[0: 62 * i], coo_norm_times[62 * (i + 1): 620]), axis=0)
+    test_coo_Y.append(coo_norm_times[(coo_len/10) * i: (coo_len/10) * (i + 1)])
+    y_temp = np.concatenate((coo_norm_times[0: (coo_len/10) * i], coo_norm_times[(coo_len/10) * (i + 1): coo_len]), axis=0)
     train_coo_Y.append(y_temp)
     x_temp = []
     y_temp = []
@@ -118,7 +121,7 @@ for test in range(0, 10):
     coo_sum_mean = coo_mult + coo_mean_Y
     coo_pred = np.power(10, coo_sum_mean)
 
-    coo_y_data = coo_times[62*test: 62*(test+1)]
+    coo_y_data = coo_times[(coo_len/10)*test: (coo_len/10)*(test+1)]
     for i in range(0, len(test_coo_X[test])):
         # print str(prediction_coo[i]) + " vs " + str(coo_y_test[i])
         #print str(coo_pred[i]) + " vs " + str(coo_y_data[i])
@@ -135,7 +138,8 @@ output.write("ELL" + "\n")
 
 # Split the data into training/testing sets
 ### Preprocessing X
-ell_X_log = np.log10(np.array(ell_X))
+ell_eps = np.add(ell_X, 1)
+ell_X_log = np.log10(np.array(ell_eps))
 mean_X = np.mean(ell_X_log,axis = 0)
 std_X = np.std(ell_X_log, axis=0)
 ell_X_norm = np.multiply((ell_X_log - mean_X), (1 / std_X))
@@ -145,6 +149,9 @@ ell_log_times = np.log10(np.array(ell_times_final))
 ell_mean_Y = np.mean(ell_log_times, axis = 0)
 ell_std_Y = np.std(ell_log_times, axis = 0)
 ell_norm_times = np.multiply((ell_log_times - ell_mean_Y), (1 / ell_std_Y))
+
+ell_len = len(ell_X)
+
 ### Split
 train_ell_X = []
 test_ell_X = []
@@ -152,11 +159,11 @@ train_ell_Y = []
 test_ell_Y = []
 
 for i in range(0, 10):
-    test_ell_X.append(ell_X_norm[20*i: 20*(i+1)])
-    x_temp = np.concatenate((ell_X_norm[0: 20*i], ell_X_norm[20*(i+1): 200]), axis=0)
+    test_ell_X.append(ell_X_norm[(ell_len/10)*i: (ell_len/10)*(i+1)])
+    x_temp = np.concatenate((ell_X_norm[0: (ell_len/10)*i], ell_X_norm[(ell_len/10)*(i+1): ell_len]), axis=0)
     train_ell_X.append(x_temp)
-    test_ell_Y.append(ell_norm_times[20 * i: 20 * (i + 1)])
-    y_temp = np.concatenate((ell_norm_times[0: 20 * i], ell_norm_times[20 * (i + 1): 200]), axis=0)
+    test_ell_Y.append(ell_norm_times[(ell_len/10) * i: (ell_len/10) * (i + 1)])
+    y_temp = np.concatenate((ell_norm_times[0: (ell_len/10) * i], ell_norm_times[(ell_len/10) * (i + 1): ell_len]), axis=0)
     train_ell_Y.append(y_temp)
     x_temp = []
     y_temp = []
@@ -175,7 +182,7 @@ for test in range(0, 10):
     ell_sum_mean = ell_mult + ell_mean_Y
     ell_pred = np.power(10, ell_sum_mean)
 
-    ell_y_data = ell_times_final[20*test: 20*(test+1)]
+    ell_y_data = ell_times_final[(ell_len/10)*test: (ell_len/10)*(test+1)]
     for i in range(0, len(test_ell_X[test])):
         # print str(prediction_ell[i]) + " vs " + str(ell_y_test[i])
         #print str(ell_pred[i]) + " vs " + str(ell_y_data[i])
@@ -205,6 +212,8 @@ csr_mean_Y = np.mean(csr_log_times, axis = 0)
 csr_std_Y = np.std(csr_log_times, axis = 0)
 csr_norm_times = np.multiply((csr_log_times - csr_mean_Y), (1 / csr_std_Y))
 
+csr_len = len(csr_X)
+
 ### Split
 train_csr_X = []
 test_csr_X = []
@@ -212,11 +221,11 @@ train_csr_Y = []
 test_csr_Y = []
 
 for i in range(0, 10):
-    test_csr_X.append(csr_X_norm[62*i: 62*(i+1)])
-    x_temp = np.concatenate((csr_X_norm[0: 62*i], csr_X_norm[62*(i+1): 620]), axis=0)
+    test_csr_X.append(csr_X_norm[(csr_len/10)*i: (csr_len/10)*(i+1)])
+    x_temp = np.concatenate((csr_X_norm[0: (csr_len/10)*i], csr_X_norm[(csr_len/10)*(i+1): csr_len]), axis=0)
     train_csr_X.append(x_temp)
-    test_csr_Y.append(csr_norm_times[62 * i: 62 * (i + 1)])
-    y_temp = np.concatenate((csr_norm_times[0: 62 * i], csr_norm_times[62 * (i + 1): 620]), axis=0)
+    test_csr_Y.append(csr_norm_times[(csr_len/10) * i: (csr_len/10) * (i + 1)])
+    y_temp = np.concatenate((csr_norm_times[0: (csr_len/10) * i], csr_norm_times[(csr_len/10) * (i + 1): csr_len]), axis=0)
     train_csr_Y.append(y_temp)
     x_temp = []
     y_temp = []
@@ -236,7 +245,7 @@ for test in range(0, 10):
     csr_sum_mean = csr_mult + csr_mean_Y
     csr_pred = np.power(10, csr_sum_mean)
 
-    csr_y_data = csr_times[62*test: 62*(test+1)]
+    csr_y_data = csr_times[(csr_len/10)*test: (csr_len/10)*(test+1)]
     for i in range(0, len(test_csr_X[test])):
         # print str(prediction_csr[i]) + " vs " + str(csr_y_test[i])
         #print str(csr_pred[i]) + " vs " + str(csr_y_data[i])
